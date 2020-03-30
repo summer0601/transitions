@@ -9,7 +9,6 @@
 import logging
 import copy
 
-from transitions.core import Enum
 from .nesting import NestedState
 from .diagrams import BaseGraph
 
