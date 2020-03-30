@@ -177,12 +177,36 @@ class TestNestedStateEnums(TestEnumsAsStates):
             C = 2
 
         m = self.machine_cls(states=Bar, initial=Bar.C)
-
         self.assertEqual(sorted(m.states['FOO'].states.keys()), ['A', 'B'])
 
         m.to_FOO_A()
         self.assertFalse(m.is_C())
         self.assertTrue(m.is_FOO_A())
+        # m.add_transition('go', Foo.A, Bar.C)
+        # m.go()
+        # self.assertEqual(Bar.C, m.state)
+
+    def test_enum_model_conversion(self):
+
+        class Inner(enum.Enum):
+            I1 = 1
+            I2 = 2
+            I3 = 3
+            I4 = 0
+
+        class Middle(enum.Enum):
+            M1 = 10
+            M2 = 20
+            M3 = 30
+            M4 = Inner
+
+        class Outer(enum.Enum):
+            O1 = 100
+            O2 = 200
+            O3 = 300
+            O4 = Middle
+
+        m = self.machine_cls(states=Outer, initial=Outer.O4.value.M4.value.I4)
 
 
 @skipIf(enum is None, "enum is not available")

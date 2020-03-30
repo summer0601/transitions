@@ -25,14 +25,19 @@ def _build_state_tree(model_states, separator, tree=None):
         for state in model_states:
             _ = _build_state_tree(state, separator, tree)
     else:
-        if isinstance(model_states, Enum):
-            tree[model_states.name] = OrderedDict()  # since enum cannot be nested we do not need an OrderedDict here
+        tmp = tree
+        if isinstance(model_states, EnumMeta):
+            for elem in model_states:
+                tmp = tmp.setdefault(elem.name, OrderedDict())
+        elif isinstance(model_states, Enum):
+            if isinstance(model_states.value, EnumMeta):
+                for state in model_states.value:
+                    _ = _build_state_tree(state, separator, tree)
+            else:
+                tree[model_states.name] = OrderedDict()
         else:
-            tmp = tree
             for elem in model_states.split(separator):
-                if elem not in tmp:
-                    tmp[elem] = OrderedDict()
-                tmp = tmp[elem]
+                tmp = tmp.setdefault(elem.name if hasattr(elem, 'name') else elem, OrderedDict())
     return tree
 
 
@@ -43,7 +48,7 @@ def _build_state_list(state_tree, separator, prefix=[]):
         if value:
             res.append(_build_state_list(value, separator, prefix=prefix + [key]))
         else:
-            return separator.join(prefix + [key])
+            res.append(separator.join(prefix + [key]))
     return res if len(res) > 1 else res[0]
 
 
@@ -458,7 +463,7 @@ class HierarchicalMachine(Machine):
                 with self(new_state.name):
                     if state_parallel:
                         self.add_states(state_parallel, remap=remap, **kwargs)
-                        new_state.initial = [s['name'] for s in state_parallel]
+                        new_state.initial = [s if isinstance(s, string_types) else s['name'] for s in state_parallel]
                     else:
                         self.add_states(state_children, remap=remap, **kwargs)
                     if remap is not None:
