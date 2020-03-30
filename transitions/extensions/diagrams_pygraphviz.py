@@ -224,9 +224,6 @@ class NestedGraph(Graph):
                 container.add_edge(src_name, dst_name, **edge_attr)
 
     def set_node_style(self, state, style):
-        if isinstance(state, Enum):
-            state = state.name
-
         try:
             node = self.fsm_graph.get_node(state)
             style_attr = self.fsm_graph.style_attributes.get('node', {}).get(style)
