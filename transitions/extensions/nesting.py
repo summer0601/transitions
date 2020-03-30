@@ -26,7 +26,7 @@ def _build_state_tree(model_states, separator, tree=None):
             _ = _build_state_tree(state, separator, tree)
     else:
         if isinstance(model_states, Enum):
-            tree[model_states.name] = {}  # since enum cannot be nested we do not need an OrderedDict here
+            tree[model_states.name] = OrderedDict()  # since enum cannot be nested we do not need an OrderedDict here
         else:
             tmp = tree
             for elem in model_states.split(separator):
