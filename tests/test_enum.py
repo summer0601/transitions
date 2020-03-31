@@ -178,13 +178,16 @@ class TestNestedStateEnums(TestEnumsAsStates):
 
         m = self.machine_cls(states=Bar, initial=Bar.C)
         self.assertEqual(sorted(m.states['FOO'].states.keys()), ['A', 'B'])
+        m.add_transition('go', 'FOO_A', 'C')
+        m.add_transition('go', 'C', 'FOO_B')
 
         m.to_FOO_A()
         self.assertFalse(m.is_C())
         self.assertTrue(m.is_FOO_A())
-        # m.add_transition('go', Foo.A, Bar.C)
-        # m.go()
-        # self.assertEqual(Bar.C, m.state)
+        m.go()
+        self.assertEqual(Bar.C, m.state)
+        m.go()
+        self.assertEqual(Foo.B, m.state)
 
     def test_enum_model_conversion(self):
 

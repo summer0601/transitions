@@ -5,7 +5,7 @@ except ImportError:
 
 from collections import OrderedDict
 
-from transitions.extensions.nesting import NestedState as State, _build_state_tree, _build_state_list
+from transitions.extensions.nesting import NestedState as State, _build_state_list
 from .test_nesting import TestNestedTransitions as TestNested
 
 try:
@@ -166,5 +166,6 @@ class TestParallel(TestNested):
                  ))]
             ))]
         )
-        self.assertEqual(tree, _build_state_tree(states, sep))
+        m = self.machine_cls()
+        self.assertEqual(tree, m._build_state_tree(states, sep))
         self.assertEqual(states, _build_state_list(tree, sep))
