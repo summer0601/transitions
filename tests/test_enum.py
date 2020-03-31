@@ -163,6 +163,36 @@ class TestNestedStateEnums(TestEnumsAsStates):
         with self.assertRaises(ValueError):
             self.machine_cls(states=[Foo.A, Foo.A])
 
+    def test_add_enum_transition(self):
+        from transitions.extensions.nesting_legacy import HierarchicalMachine
+        if self.machine_cls is HierarchicalMachine:
+            self.skipTest("Converting enums to nested states is not supported on the legacy HierarchicalMachine")
+
+        class Foo(enum.Enum):
+            A = 0
+            B = 1
+
+        class Bar(enum.Enum):
+            FOO = Foo
+            C = 2
+
+        m = self.machine_cls(states=Bar, initial=Bar.C, auto_transitions=False)
+        m.add_transition('go', Bar.C, Foo.A, conditions=lambda: False)
+        trans = m.events['go'].transitions['C']
+        self.assertEqual(1, len(trans))
+        self.assertEqual('FOO_A', trans[0].dest)
+        m.add_transition('go', Bar.C, 'FOO_B')
+        self.assertEqual(2, len(trans))
+        self.assertEqual('FOO_B', trans[1].dest)
+        m.go()
+        self.assertTrue(m.is_FOO_B())
+        m.add_transition('go', Foo.B, 'C')
+        trans = m.events['go'].transitions['FOO_B']
+        self.assertEqual(1, len(trans))
+        self.assertEqual('C', trans[0].dest)
+        m.go()
+        self.assertEqual(m.state, Bar.C)
+
     def test_add_nested_enums_as_nested_state(self):
         from transitions.extensions.nesting_legacy import HierarchicalMachine
         if self.machine_cls is HierarchicalMachine:
@@ -209,7 +239,7 @@ class TestNestedStateEnums(TestEnumsAsStates):
             O3 = 300
             O4 = Middle
 
-        m = self.machine_cls(states=Outer, initial=Outer.O4.value.M4.value.I4)
+        m = self.machine_cls(states=Outer, initial=Outer.O1)
 
 
 @skipIf(enum is None, "enum is not available")

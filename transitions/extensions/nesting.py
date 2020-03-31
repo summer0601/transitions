@@ -499,6 +499,16 @@ class HierarchicalMachine(Machine):
             else:
                 raise ValueError("Cannot add state of type {0}.".format(type(state).__name__))
 
+    def add_transition(self, trigger, source, dest, conditions=None,
+                       unless=None, before=None, after=None, prepare=None, **kwargs):
+        if source != self.wildcard_all:
+            source = [self.state_cls.separator.join(self._get_enum_path(s)) if isinstance(s, Enum) else s
+                      for s in listify(source)]
+        if dest != self.wildcard_same:
+            dest = self.state_cls.separator.join(self._get_enum_path(dest)) if isinstance(dest, Enum) else dest
+        _super(HierarchicalMachine, self).add_transition(trigger, source, dest, conditions,
+                                                         unless, before, after, prepare, **kwargs)
+
     def get_global_name(self, state=None, join=True):
         local_stack = [s[0] for s in self._stack] + [self.scoped]
         local_stack_start = len(local_stack) - local_stack[::-1].index(self)
